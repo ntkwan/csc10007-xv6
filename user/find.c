@@ -42,8 +42,7 @@ void find(char *path, char *file)
 
     strcpy(buf, path);
     p = buf + strlen(buf);
-    fprintf(1, "path: %s\n", buf);
-    *p++ = '/';
+    *p++ = '/'; // append a slash to the end of the path
     while (read(fd, &de, sizeof(de)) == sizeof(de))
     {
         if (de.inum == 0 || !strcmp(de.name, ".") || !strcmp(de.name, "..")) // not recurse into . and ..
