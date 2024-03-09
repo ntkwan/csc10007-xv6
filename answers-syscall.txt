@@ -1,0 +1,23 @@
+Looking at the backtrace output, which function called syscall? 
+--> usertrap
+
+What is the value of p->trapframe->a7 and what does that value represent? 
+--> 7
+--> SYS_exec
+
+What was the previous mode that the CPU was in? 
+--> user mode
+
+Write down the assembly instruction the kernel is panicing at. Which register corresponds to the variable num?
+--> num = *(int *)0;
+    800020b6:	00002683          	lw	a3,0(zero) # 0 <_entry-0x80000000>
+--> a3
+
+Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in scause above?
+--> The kernel crash because of an error occurred while loading data from memory address 0 into s2
+--> Address 0 is not mapped int the kernel space, it begins at address 0x800
+--> Yes, that is confirmed by the value 13 in scause which represents a load page fault
+
+What is the name of the binary that was running when the kernel paniced? What is its process id (pid)?
+--> initcode
+--> 1
