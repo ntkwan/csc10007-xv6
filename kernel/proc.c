@@ -149,6 +149,22 @@ found:
   return p;
 }
 
+uint64
+get_nproc(void)
+{
+  struct proc *p;
+  uint64 num = 0;
+
+  for(p = proc; p < &proc[NPROC]; p++) {
+    acquire(&p->lock);
+    if(p->state != UNUSED) 
+      num++;
+    release(&p->lock);
+  }
+
+  return num;
+}
+
 // free a proc structure and the data hanging from it,
 // including user pages.
 // p->lock must be held.
