@@ -10,8 +10,8 @@ What was the previous mode that the CPU was in?
 
 Write down the assembly instruction the kernel is panicing at. Which register corresponds to the variable num?
 --> num = *(int *)0;
-    800020b6:	00002683          	lw	a3,0(zero) # 0 <_entry-0x80000000>
---> a3
+    8000215e:	00002903          	lw	s2,0(zero) # 0 <_entry-0x80000000>
+--> s2
 
 Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in scause above?
 --> The kernel crash because of an error occurred while loading data from memory address 0 into s2
