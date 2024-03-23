@@ -1,23 +1,26 @@
-Looking at the backtrace output, which function called syscall? 
---> usertrap
+1. Trong kết quả được thể hiện khi nhập lệnh backtrace, hàm nào đã gọi syscall?
+    Hàm đã gọi syscall là hàm usertrap() ở file kernel/trap.c:67. Chiếu theo bảng backtrace, ta thấy rằng hàm usertrap() được gọi trước rồi đến hàm syscall().
+    
+2. Con trỏ p->trapframe->a7 đang giữ giá trị gì và giá trị đó có ý nghĩa như thế nào? (có thể đối chiếu với nội dung trong file user/initcode.S)
+    Nhập n 2 lần vào trong GDB và cho GDB chạy qua câu lệnh có nội dung struct proc *p = myproc(), sau đó nhập vào trong GDB p /x *p dùng để in ra thông tin tiến trình hiện tại mà struct proc đang giữ, nhập thêm p p->trapframe->a7 để xem giá trị đang giữ của a7. Đồng thời ta có thể đối chiếu giá trị đó trong file user/initcode.S
+    Ta thấy rằng giá trị 7 mà a7 đang giữ chính là SYS_exec được định nghĩa trong file kernel/syscall.h
 
-What is the value of p->trapframe->a7 and what does that value represent? 
---> 7
---> SYS_exec
+3. Cho biết trước đó CPU đang chạy ở chế độ nào? 
+    Khi chạy đến dòng lệnh num = p->trapframe->a7, ta có thể nhập trong GDB lệnh p /t $sstatus để xem trạng thái của thanh ghi. Theo trong tài liệu RISC-V privileged instructions, thanh ghi sstatus lưu lại trạng thái hoạt động của vi xử lý. Bit SPP cho biết độ ưu tiên của thanh ghi đang thực thi trước khi đi vào supervíor mode (S-mode). Khi một trap được đặt, SPP sẽ được chỉnh về 0 nếu trap này được đặt từ user mode (U-mode), ngược lại là 1. Vậy để biết được CPU đang chạy ở chế độ nào ta cần xác định SPP bit. 
+    Với hai cấu trúc được biểu diễn như trên, ta thấy rằng SPP bit luôn nằm ở vị trí thứ 8, vậy ta chỉ cần tìm xem giá trị của thanh ghi sstatus và kiểm tra bit thứ 8 để xác định chế độ của CPU. 
+    Ta thấy rằng SPP bit là 0, tức trước đó CPU đang chạy ở chế độ user mode (U-mode).
 
-What was the previous mode that the CPU was in? 
---> user mode
+4. Hãy in ra đoạn mã assembly mà kernel bị lỗi panic. Thanh ghi nào liên quan đến biến num?
+    Sau khi chạy, chương trình sẽ trả về địa chỉ dòng bị lỗi tại trường sepc
+    Tìm mã lỗi này trong file kernel/kernel.asm, ta sẽ thấy được dòng mã assembly cần tìm.
+    -> num = *(int *)0;
+    -> 8000215e: 00002903 lw s2,0(zero) # 0 <_entry-0x80000000>
+    Từ đoạn mã trên, thanh ghi s2 được sử dụng như biến num qua việc gán giá trị 0 thông qua câu lệnh lw s2, 0(zero).
 
-Write down the assembly instruction the kernel is panicing at. Which register corresponds to the variable num?
---> num = *(int *)0;
-    8000215e:	00002903          	lw	s2,0(zero) # 0 <_entry-0x80000000>
---> s2
-
-Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in scause above?
---> The kernel crash because of an error occurred while loading data from memory address 0 into s2
---> Address 0 is not mapped int the kernel space, it begins at address 0x800
---> Yes, that is confirmed by the value 13 in scause which represents a load page fault
-
-What is the name of the binary that was running when the kernel paniced? What is its process id (pid)?
---> initcode
---> 1
+5. Cho biết tại sao kernel lại bị crash (dừng đột ngột)?
+    Kernel bị crash bởi vì gặp lỗi trong quá trình lưu dữ liệu từ địa chỉ 0 vào thanh ghi 2. Cụ thể, địa chỉ 0 không được ánh xạ trong kernel space mà kernel sẽ bắt đầu đọc dữ liệu từ địa chỉ 0x800. Điều này được xác nhận lại bằng việc nếu sử dụng lệnh p $scause sẽ trả ra giá trị 13, tức là lỗi lưu dữ liệu (load page fault).
+ 
+ 6. Cho biết tên của tiến trình đang chạy trong lúc kernel bị panic? ID của tiến trình (pid) là gì?
+    Tiến trình chạy trong lúc kernel bị panic là initcode được phát hiện bằng lệnh p p->name.     
+    Ngoài ra, sử dụng lệnh p *p để cho biết thông tin chi tiết về tiến trình đó thông qua con trỏ p. Từ đó ta có thể xác định được pid của tiến trình là 1.     
+    Ta cũng có thể xác định được \codeword{pid} của tiến trình này bằng lệnh p p->pid.
