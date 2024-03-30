@@ -1,0 +1,3 @@
+Which other xv6 system call(s) could be made faster using this shared page? Explain how.
+Các system calls có sử dụng hàm copyout và các system calls dùng để truy xuất thông tin sẽ được tăng tốc.
+Bởi vì khi 1 system call được sử dụng, CPU cần phải chuyển đổi từ chế độ nguời dùng qua chế độ kernel để thực thi các câu lệnh của kernel. Với shared read-only page, các system calls như copyout hoặc truy xuất thông tin sẽ được thực hiện ngay trong không gian nguời dùng mà không cần phải thông qua kernel do các dữ liệu mà các system calls này cần có thể được truy cập trực tiếp từ shared read-only page trong không gian nguời dùng. Điều này sẽ loại bỏ các chi phí chuyển đổi và giảm thời gian thực hiện các system calls.
