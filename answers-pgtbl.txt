@@ -1,3 +1,9 @@
 Which other xv6 system call(s) could be made faster using this shared page? Explain how.
 Các system calls có sử dụng hàm copyout và các system calls dùng để truy xuất thông tin sẽ được tăng tốc.
 Bởi vì khi 1 system call được sử dụng, CPU cần phải chuyển đổi từ chế độ nguời dùng qua chế độ kernel để thực thi các câu lệnh của kernel. Với shared read-only page, các system calls như copyout hoặc truy xuất thông tin sẽ được thực hiện ngay trong không gian nguời dùng mà không cần phải thông qua kernel do các dữ liệu mà các system calls này cần có thể được truy cập trực tiếp từ shared read-only page trong không gian nguời dùng. Điều này sẽ loại bỏ các chi phí chuyển đổi và giảm thời gian thực hiện các system calls.
+
+Explain the output of vmprint in terms of Fig 3-4 from the text. What does page 0 contain? What is in page 2? When running in user mode, could the process read/write the memory mapped by page 1? What does the third to last page contain?
+- Page 0: data and text segment của process
+- Page 2: stack của process
+- Khi chạy ở user mode, process không thể đọc/ghi bộ nhớ mapped bởi page 1 vì page 1 là guard page dùng để bảo vệ page 2 là ngăn xếp khỏi bị nguời dùng truy cập
+- Page 3 tới page cuối: heap, trapframe, trampoline
