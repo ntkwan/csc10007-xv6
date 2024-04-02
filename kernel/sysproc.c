@@ -74,7 +74,41 @@ sys_sleep(void)
 int
 sys_pgaccess(void)
 {
-  // lab pgtbl: your code here.
+  uint64 base_address;
+  argaddr(0, &base_address);
+
+  int len;
+  argint(1, &len);
+  if(len > 64) {
+    printf("[error]sys_pgaccess: you can only check at most 64 pages\n");
+    return -1;
+  }
+
+  uint64 mask_address;
+  argaddr(2, &mask_address);
+
+  uint64 mask = 0;
+  struct proc* p = myproc();
+  
+  for(int i = 0; i < len; ++i) {
+    pte_t* pte_pointer = walk(p->pagetable, base_address + i * PGSIZE, 0);
+    
+    if(pte_pointer == 0) {
+      printf("[error]sys_pgaccess: walk() error \n");
+      return -1;
+    }
+
+    if((*pte_pointer) & PTE_A) {
+      mask |= (1 << i);
+      (*pte_pointer) &= (~(pte_t)PTE_A);
+    }
+  }
+
+  if(copyout(p->pagetable, mask_address, (char*)(&mask), (len + 7) / 8) != 0) {
+    printf("[error]sys_pgaccess: copyout() error \n");
+    return -1;
+  }
+
   return 0;
 }
 #endif
