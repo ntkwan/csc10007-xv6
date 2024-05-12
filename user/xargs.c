@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     while(read(0, c, 1) > 0) { // read next char from stdin
         if(*c == '\n') { // if the char is a newline
             
-            *buf_ptr = '\0'; // reset pointer to null
+            *buf_ptr = '\0'; // append null to the end of the buffer
             args[nargs] = (char *)malloc(strlen(buf) + 1);
             strcpy(args[nargs], buf);
             nargs++;
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
                 buf_ptr = buf; // reset to blank buffer
             }
         } else if(*c == ' ') { // if the char is a space (separator between arguments)
-            *buf_ptr = '\0'; // reset pointer to null
+            *buf_ptr = '\0'; // // append null to the end of the buffer
             args[nargs] = (char *)malloc(strlen(buf) + 1);
             strcpy(args[nargs], buf);
             nargs++;
